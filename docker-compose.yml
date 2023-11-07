@@ -1,0 +1,41 @@
+version: "3.9"
+
+networks:
+  nessus_network:
+    name: nessus_network
+    driver: bridge
+    #ipam:
+    #  config:
+    #    - subnet: "172.10.0.0/16"
+
+services:
+
+  nessus:
+    build:
+      context: .
+      dockerfile: dockerfile_nessus
+    # image: tenableofficial/nessus:latest
+    hostname: nessus
+    container_name: nessus
+    restart: always
+    ports:
+      - 8834:8834
+    environment:
+      - ACTIVATION_CODE=CHANGEME
+      - USERNAME=CHANGEME
+      - PASSWORD=CHANGEME
+      - AUTO_UPDATE=plugins  # 'all' = Update Nessus software and plugins / 'plugins' = Update plugins only / 'no' = No update
+      - NESSUS_BACKUP_FILE=NONE # Use NONE if you don't want to use backup file else put your BACKUP_FILE_NAME
+      # - NESSUS_BACKUP_GIT=https://TOKEN@github.com/git_user/you_project.git
+    volumes:
+      - ./tmp/:/tmp/:rw
+      - ./git_nessus_backup/:/home/nessus/:rw  # Change git_nessus_backup with your repo name
+      - ./var+log+supervisor:/var/log/supervisor
+      - ./opt+nessus:/opt/nessus
+    networks:
+      - nessus_network
+    logging:
+      driver: json-file
+      options:
+        "max-size": "10m"
+        "max-file": "5"
